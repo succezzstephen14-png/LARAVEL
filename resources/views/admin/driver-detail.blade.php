@@ -1,0 +1,323 @@
+@extends('layouts.admin')
+
+@section('title', 'Driver Details')
+
+@section('content')
+@php
+    use Illuminate\Support\Str;
+    use Carbon\Carbon;
+@endphp
+<style>
+    .review-wrapper {
+        max-width: 1000px;
+        margin: 2rem auto;
+        padding: 1rem;
+    }
+    .review-card {
+        background: white;
+        border-radius: 24px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 24px 80px rgba(15, 23, 42, 0.08);
+        overflow: hidden;
+    }
+    .review-header {
+        background: #1d4ed8;
+        color: white;
+        padding: 2rem;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    .review-header h1 {
+        margin: 0;
+        font-size: 1.75rem;
+        font-weight: 800;
+    }
+    .review-header .status-pill {
+        background: #f59e0b;
+        color: white;
+        padding: 0.65rem 1rem;
+        border-radius: 999px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .review-body {
+        padding: 2rem;
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        gap: 1.5rem;
+    }
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+    }
+    .detail-box {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 1.2rem;
+    }
+    .detail-label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #6b7280;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .detail-value {
+        color: #111827;
+        font-weight: 600;
+        line-height: 1.5;
+    }
+    .documents-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        gap: 0.75rem;
+    }
+    .documents-list li {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+    .documents-list a {
+        color: #1d4ed8;
+        text-decoration: none;
+        font-weight: 700;
+    }
+    .action-row {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+    .btn-action {
+        border: none;
+        border-radius: 14px;
+        padding: 0.9rem 1.4rem;
+        font-weight: 700;
+        cursor: pointer;
+    }
+    .btn-approve {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+    .btn-reject {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+    }
+</style>
+
+<div class="review-wrapper">
+    <a href="{{ route('admin.pending-drivers') }}" class="btn btn-outline-secondary" style="margin-bottom: 1rem;">← Back to pending drivers</a>
+
+    <div class="review-card">
+        <div class="review-header">
+            <div>
+                <h1>{{ $driver->user->name }}</h1>
+                <p style="opacity: .85; margin: .5rem 0 0;">Driver profile submitted by {{ $driver->user->email }}</p>
+            </div>
+            <div class="status-pill {{ $driver->approval_status }}">{{ ucfirst($driver->approval_status) }}</div>
+        </div>
+
+        <div style="padding: .85rem 2rem; background:#f8fafc; border-bottom:1px solid #e6eefc; display:flex;gap:1rem;flex-wrap:wrap;align-items:center">
+            <div class="small" style="color:#374151;font-weight:700">Driver ID: {{ $driver->id }}</div>
+            <div class="small" style="color:#374151">User ID: {{ $driver->user_id }}</div>
+            <div class="small" style="color:#374151">Relationship: {{ $driver->relationship ?? '—' }}</div>
+            <div class="small" style="color:#374151">Onboarded: {{ $driver->user->onboarding_completed ? 'Yes' : 'No' }} @if($driver->user->onboarded_at) · {{ Carbon::parse($driver->user->onboarded_at)->toDateTimeString() }} @endif</div>
+            <div class="small" style="color:#374151">Profile image: @if($driver->profile_image) <a href="{{ route('admin.documents.show', ['type' => 'driver', 'id' => $driver->id, 'field' => 'profile_image']) }}" target="_blank">{{ Str::afterLast($driver->profile_image,'/') }}</a> @else — @endif</div>
+            <div class="small" style="color:#374151">Profile picture: @if($driver->profile_picture) <a href="{{ route('admin.documents.show', ['type' => 'driver', 'id' => $driver->id, 'field' => 'profile_picture']) }}" target="_blank">{{ Str::afterLast($driver->profile_picture,'/') }}</a> @else — @endif</div>
+        </div>
+
+        <div class="review-body">
+            <div>
+                <div class="detail-grid">
+                    <div class="detail-box">
+                        <div class="detail-label">Full name</div>
+                        <div class="detail-value">{{ $driver->user->name ?? '—' }}</div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-label">Email</div>
+                        <div class="detail-value">{{ $driver->user->email ?? '—' }}</div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-label">Phone</div>
+                        <div class="detail-value">{{ $driver->user->phone ?? '—' }}</div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-label">Address</div>
+                        <div class="detail-value">{{ $driver->user->address ?? '—' }}</div>
+                    </div>
+                </div>
+
+                <div class="detail-grid" style="margin-top: .5rem;">
+                    <div class="detail-box">
+                        <div class="detail-label">Date of birth</div>
+                        <div class="detail-value">{{ $driver->dob ? \Carbon\Carbon::parse($driver->dob)->toDateString() : '—' }}</div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-label">License number</div>
+                        <div class="detail-value">{{ $driver->license_number ?? '—' }}</div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-label">License class</div>
+                        <div class="detail-value">{{ $driver->license_class ?? '—' }}</div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-label">License expiry</div>
+                        <div class="detail-value">{{ $driver->license_expiry ? $driver->license_expiry->toDateString() : '—' }}</div>
+                    </div>
+                </div>
+
+                <div class="detail-grid" style="margin-top: .5rem;">
+                    <div class="detail-box">
+                        <div class="detail-label">Experience</div>
+                        <div class="detail-value">{{ $driver->experience_years ?? '—' }} years</div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-label">Guarantor</div>
+                        <div class="detail-value">{{ $driver->guarantor ?? '—' }} — {{ $driver->guarantor_phone ?? '—' }}</div>
+                    </div>
+                </div>
+
+                <div class="detail-box" style="margin-top: .5rem;">
+                    <div class="detail-label">Bio</div>
+                    <div class="detail-value">{{ $driver->bio ?? 'No biography provided.' }}</div>
+                </div>
+
+                <div class="detail-grid" style="margin-top: .5rem;">
+                    <div class="detail-box">
+                        <div class="detail-label">Ghana card</div>
+                        <div class="detail-value">{{ $driver->ghana_card_no ?? $driver->g_ghana_card_no ?? '—' }}</div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-label">Payment</div>
+                        <div class="detail-value">{{ ucfirst($driver->payment_status ?? '—') }} @if($driver->payment_reference) · {{ $driver->payment_reference }} @endif</div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value">{{ ucfirst($driver->status ?? '—') }}</div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-label">Approval</div>
+                        <div class="detail-value">{{ ucfirst($driver->approval_status ?? 'pending') }} @if($driver->approved_at) · Approved at {{ $driver->approved_at->toDateTimeString() }} @endif</div>
+                    </div>
+                </div>
+
+                <div class="detail-grid" style="margin-top: .5rem;">
+                    <div class="detail-box">
+                        <div class="detail-label">Rating</div>
+                        <div class="detail-value">{{ $driver->rating ?? 0 }} ({{ $driver->total_trips ?? 0 }} trips)</div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-label">Location</div>
+                        <div class="detail-value">{{ $driver->latitude && $driver->longitude ? $driver->latitude . ', ' . $driver->longitude : 'Not available' }} @if($driver->last_location_update) · Updated {{ $driver->last_location_update->diffForHumans() }} @endif</div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-label">Created</div>
+                        <div class="detail-value">{{ $driver->created_at ? $driver->created_at->toDateTimeString() : '—' }}</div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-label">Last updated</div>
+                        <div class="detail-value">{{ $driver->updated_at ? $driver->updated_at->toDateTimeString() : '—' }}</div>
+                    </div>
+                </div>
+
+                <div class="detail-box" style="margin-top: .5rem;">
+                    <div class="detail-label">Rejection reason</div>
+                    <div class="detail-value">{{ $driver->rejection_reason ?? '—' }}</div>
+                </div>
+            </div>
+
+            <aside>
+                <div class="detail-box" style="text-align:center;">
+                    @if($driver->getProfilePictureUrl())
+                        <img src="{{ route('admin.documents.show', ['type' => 'driver', 'id' => $driver->id, 'field' => 'profile_picture']) }}" alt="photo" style="width:200px;height:200px;object-fit:cover;border-radius:12px;border:1px solid #e6eefc">
+                    @elseif($driver->profile_image)
+                        <img src="{{ route('admin.documents.show', ['type' => 'driver', 'id' => $driver->id, 'field' => 'profile_image']) }}" alt="photo" style="width:200px;height:200px;object-fit:cover;border-radius:12px;border:1px solid #e6eefc">
+                    @else
+                        <div style="width:200px;height:200px;border-radius:12px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:3rem;color:#64748b">{{ Str::substr($driver->user->name,0,1) }}</div>
+                    @endif
+                    <div style="margin-top:.5rem;font-weight:700">{{ $driver->user->name }}</div>
+                    <div class="small" style="color:#6b7280">{{ $driver->user->phone ?? '—' }}</div>
+                </div>
+
+                <div class="detail-box" style="margin-top:1rem;">
+                    <div class="detail-label">Uploaded documents</div>
+                    @php
+                        $driverDocuments = [
+                            'License' => $driver->license_file,
+                            'Ghana Card' => $driver->ghana_card_file,
+                            'Passport' => $driver->passport_file,
+                            'Guarantor ID' => $driver->guarantor_ghana_card_file,
+                        ];
+                    @endphp
+                    <ul class="documents-list">
+                        @foreach($driverDocuments as $label => $path)
+                            @if($path)
+                                <li>
+                                    <span>{{ $label }}</span>
+                                    <a href="{{ route('admin.documents.show', ['type' => 'driver', 'id' => $driver->id, 'field' => match ($label) { 'License' => 'license_file', 'Ghana Card' => 'ghana_card_file', 'Passport' => 'passport_file', default => 'guarantor_ghana_card_file' }]) }}" target="_blank">View</a>
+                                </li>
+                            @endif
+                        @endforeach
+                        @if($driver->getProfilePictureUrl())
+                            <li>
+                                <span>Photo</span>
+                                <a href="{{ route('admin.documents.show', ['type' => 'driver', 'id' => $driver->id, 'field' => 'profile_picture']) }}" target="_blank">View</a>
+                            </li>
+                        @endif
+                    </ul>
+                </div>
+
+                <div class="detail-box" style="margin-top:1rem;">
+                    <div class="detail-label">Actions</div>
+                    <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:.75rem;">
+                        <form action="{{ route('admin.drivers.approve', $driver) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn-action btn-approve" style="width:100%">Approve driver</button>
+                        </form>
+                        <button class="btn-action btn-reject" data-bs-toggle="modal" data-bs-target="#rejectDriverModal" style="width:100%">Reject driver</button>
+                        <a href="{{ route('admin.pending-drivers') }}" class="btn btn-outline-secondary" style="width:100%">Back</a>
+                        <button onclick="window.print()" class="btn btn-outline-primary" style="width:100%">Print</button>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <div class="modal fade" id="rejectDriverModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Reject Driver Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ route('admin.drivers.reject', $driver) }}" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="rejection_reason" class="form-label">Reason for Rejection</label>
+                            <textarea id="rejection_reason" name="rejection_reason" class="form-control" rows="4" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Reject Driver</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
